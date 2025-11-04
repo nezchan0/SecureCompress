@@ -2,12 +2,12 @@
 
 **Privacy-first offline image compressor for official documents**
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://nezchan0.github.io/SecureCompress-/)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://nezchan0.github.io/SecureCompress/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![No Tracking](https://img.shields.io/badge/tracking-none-success)](https://github.com/nezchan0/SecureCompress)
 
 
-**🌐 Live Demo:** (https://nezchan0.github.io/SecureCompress-/)
+**🌐 Live Demo:** (https://nezchan0.github.io/SecureCompress/)
 
 ---
 
@@ -41,7 +41,7 @@ A secure, browser-based application that processes images **entirely on your dev
 
 ## 🚀 Quick Start
 
-1. **Visit** the [live demo](https://nezchan0.github.io/SecureCompress-/)
+1. **Visit** the [live demo](https://nezchan0.github.io/SecureCompress/)
 2. **Select** your image file
 3. **Configure** output format, DPI, and dimensions
 4. **Use** the CM→PX helper for physical size requirements
