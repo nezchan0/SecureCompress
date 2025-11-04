@@ -162,10 +162,3 @@ This project is licensed under the [MIT License](LICENSE) — feel free to use, 
 
 Alok Kumar Maurya – Developer | Email: [alok05.maurya@gmail.com](alok05.maurya@gmail.com)
 
-
-
-## 🎨 Optional: Create a Logo
-
-Simple text-based logo for the HTML header:
-```
-🔒 SecureCompress
