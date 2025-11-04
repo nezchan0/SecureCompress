@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Compressor - Offline Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .controls-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .control-group h3 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group h3::before {
+            content: '▸';
+            color: #667eea;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #667eea;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        input[type="file"]:hover {
+            border-color: #764ba2;
+            background: #f8f9fa;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .cm-converter {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .cm-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .cm-default {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .status-area {
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .preview-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .preview-container h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        #previewCanvas {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .no-preview {
+            padding: 60px 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .metadata-block {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .metadata-block h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .metadata-item:last-child {
+            border-bottom: none;
+        }
+
+        .metadata-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .metadata-value {
+            color: #495057;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖼️ Image Compressor</h1>
+            <p>Offline image processing tool - Resize, convert, and compress images entirely in your browser</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Column: Controls -->
+            <div class="controls-column">
+                <!-- File Input -->
+                <div class="control-group">
+                    <h3>Select Image</h3>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
+
+                <!-- Output Settings -->
+                <div class="control-group">
+                    <h3>Output Settings</h3>
+                    
+                    <div class="input-group">
+                        <label for="outputFilename">Output Filename:</label>
+                        <input type="text" id="outputFilename" placeholder="e.g., image_updated">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="outputFormat">Output Format:</label>
+                        <select id="outputFormat">
+                            <option value="jpeg">JPEG</option>
+                            <option value="jpg">JPG</option>
+                            <option value="png">PNG</option>
+                            <option value="webp">WEBP</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="dpiInput">DPI (Dots Per Inch):</label>
+                        <input type="number" id="dpiInput" value="200" min="72" max="600" step="1">
+                    </div>
+                </div>
+
+                <!-- Dimensions -->
+                <div class="control-group">
+                    <h3>Dimensions (Pixels)</h3>
+                    
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="widthInput">Width (px):</label>
+                            <input type="number" id="widthInput" min="1" step="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="heightInput">Height (px):</label>
+                            <input type="number" id="heightInput" min="1" step="1">
+                        </div>
+                    </div>
+
+                    <!-- CM to PX Converter -->
+                    <div class="cm-converter">
+                        <label for="cmInput">CM to PX Helper:</label>
+                        <input type="number" id="cmInput" placeholder="Enter cm value" step="0.1" min="0">
+                        <div class="cm-result">
+                            <span>Result:</span>
+                            <span id="cmToPxResult">— px</span>
+                        </div>
+                        <div class="cm-default">
+                            1 cm = <span id="oneCmPx">—</span> px at current DPI
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality -->
+                <div class="control-group">
+                    <h3>Quality Settings</h3>
+                    <div class="input-group">
+                        <label for="qualityInput">Quality (0.1 - 1.0):</label>
+                        <input type="number" id="qualityInput" value="0.92" min="0.1" max="1" step="0.01">
+                        <small style="color: #6c757d; display: block; margin-top: 5px;">
+                            Higher = better quality, larger file size
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <button class="btn-primary" id="compressBtn" disabled>
+                    Compress & Prepare Download
+                </button>
+                <button class="btn-success hidden" id="downloadBtn">
+                    Download Image
+                </button>
+
+                <!-- Status Area -->
+                <div id="statusArea"></div>
+            </div>
+
+            <!-- Right Column: Preview & Metadata -->
+            <div class="preview-column">
+                <!-- Preview Canvas -->
+                <div class="preview-container">
+                    <h3>Preview</h3>
+                    <canvas id="previewCanvas"></canvas>
+                    <div id="noPreview" class="no-preview">
+                        Select an image to see preview
+                    </div>
+                </div>
+
+                <!-- Metadata Block -->
+                <div class="metadata-block" id="metadataBlock">
+                    <h3>Image Metadata</h3>
+                    <div id="metadataContent">
+                        <div class="no-preview" style="padding: 20px;">
+                            No image loaded
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let originalImage = null;
+        let processedBlob = null;
+        let originalFilename = '';
+        let detectedDPI = 200;
+
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const outputFilename = document.getElementById('outputFilename');
+        const outputFormat = document.getElementById('outputFormat');
+        const dpiInput = document.getElementById('dpiInput');
+        const widthInput = document.getElementById('widthInput');
+        const heightInput = document.getElementById('heightInput');
+        const qualityInput = document.getElementById('qualityInput');
+        const cmInput = document.getElementById('cmInput');
+        const cmToPxResult = document.getElementById('cmToPxResult');
+        const oneCmPx = document.getElementById('oneCmPx');
+        const compressBtn = document.getElementById('compressBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statusArea = document.getElementById('statusArea');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const noPreview = document.getElementById('noPreview');
+        const metadataContent = document.getElementById('metadataContent');
+        const ctx = previewCanvas.getContext('2d');
+
+        // Event listeners
+        fileInput.addEventListener('change', handleFileSelect);
+        compressBtn.addEventListener('click', compressImage);
+        downloadBtn.addEventListener('click', downloadImage);
+        dpiInput.addEventListener('input', updateCmConverter);
+        cmInput.addEventListener('input', updateCmConverter);
+
+        /**
+         * Handle file selection
+         */
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showStatus('Please select a valid image file.', 'error');
+                return;
+            }
+
+            originalFilename = file.name;
+            showStatus('Loading image...', 'info');
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    initializeImageSettings(file);
+                    displayPreview();
+                    compressBtn.disabled = false;
+                    showStatus('Image loaded successfully!', 'success');
+                };
+                img.onerror = function() {
+                    showStatus('Failed to load image.', 'error');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Try to read EXIF data for DPI
+            readExifDPI(file);
+        }
+
+        /**
+         * Read EXIF data to extract DPI (XResolution)
+         */
+        function readExifDPI(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const view = new DataView(e.target.result);
+                
+                // Check for JPEG signature
+                if (view.getUint16(0, false) !== 0xFFD8) {
+                    return; // Not a JPEG
+                }
+
+                let offset = 2;
+                const length = view.byteLength;
+
+                // Find APP1 marker (EXIF)
+                while (offset < length) {
+                    if (view.getUint16(offset, false) === 0xFFE1) {
+                        // Found APP1 marker
+                        const exifOffset = offset + 10; // Skip marker, length, and "Exif\0\0"
+                        
+                        // Check for "Exif" string
+                        if (exifOffset + 4 <= length) {
+                            const exifString = String.fromCharCode(
+                                view.getUint8(offset + 4),
+                                view.getUint8(offset + 5),
+                                view.getUint8(offset + 6),
+                                view.getUint8(offset + 7)
+                            );
+                            
+                            if (exifString === 'Exif') {
+                                const dpi = extractDPIFromExif(view, exifOffset);
+                                if (dpi) {
+                                    detectedDPI = dpi;
+                                    dpiInput.value = dpi;
+                                    updateCmConverter();
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    offset += 2 + view.getUint16(offset + 2, false);
+                }
+            };
+            reader.readAsArrayBuffer(file.slice(0, 65536)); // Read first 64KB
+        }
+
+        /**
+         * Extract DPI from EXIF data
+         */
+        function extractDPIFromExif(view, offset) {
+            try {
+                // Determine endianness
+                const byteOrder = view.getUint16(offset, false);
+                const littleEndian = byteOrder === 0x4949; // "II" = little endian
+                
+                // Get IFD offset
+                let ifdOffset = view.getUint32(offset + 4, littleEndian);
+                ifdOffset += offset;
+
+                // Read number of entries
+                const numEntries = view.getUint16(ifdOffset, littleEndian);
+
+                // Search for XResolution tag (0x011A)
+                for (let i = 0; i < numEntries; i++) {
+                    const entryOffset = ifdOffset + 2 + (i * 12);
+                    const tag = view.getUint16(entryOffset, littleEndian);
+                    
+                    if (tag === 0x011A) { // XResolution
+                        const valueOffset = view.getUint32(entryOffset + 8, littleEndian);
+                        const actualOffset = offset + valueOffset;
+                        const numerator = view.getUint32(actualOffset, littleEndian);
+                        const denominator = view.getUint32(actualOffset + 4, littleEndian);
+                        return Math.round(numerator / denominator);
+                    }
+                }
+            } catch (e) {
+                console.error('Error reading EXIF:', e);
+            }
+            return null;
+        }
+
+        /**
+         * Initialize settings after image load
+         */
+        function initializeImageSettings(file) {
+            // Set default output filename
+            const nameWithoutExt = originalFilename.replace(/\.[^/.]+$/, '');
+            outputFilename.value = nameWithoutExt + '_updated';
+
+            // Set dimensions
+            widthInput.value = originalImage.width;
+            heightInput.value = originalImage.height;
+
+            // Update metadata
+            updateMetadata(file);
+
+            // Update CM converter
+            updateCmConverter();
+        }
+
+        /**
+         * Display preview on canvas
+         */
+        function displayPreview() {
+            if (!originalImage) return;
+
+            const maxWidth = previewCanvas.parentElement.clientWidth - 40;
+            const maxHeight = 600;
+
+            let width = originalImage.width;
+            let height = originalImage.height;
+
+            // Scale to fit preview area
+            const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+            width = Math.floor(width * scale);
+            height = Math.floor(height * scale);
+
+            previewCanvas.width = width;
+            previewCanvas.height = height;
+
+            ctx.drawImage(originalImage, 0, 0, width, height);
+            
+            previewCanvas.classList.remove('hidden');
+            noPreview.classList.add('hidden');
+        }
+
+        /**
+         * Update metadata display
+         */
+        function updateMetadata(file) {
+            const fileSizeKB = (file.size / 1024).toFixed(2);
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            const sizeDisplay = file.size > 1024 * 1024 ? 
+                `${fileSizeMB} MB` : `${fileSizeKB} KB`;
+
+            metadataContent.innerHTML = `
+                <div class="metadata-item">
+                    <span class="metadata-label">Original Filename:</span>
+                    <span class="metadata-value">${originalFilename}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Original Size:</span>
+                    <span class="metadata-value">${sizeDisplay}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Dimensions:</span>
+                    <span class="metadata-value">${originalImage.width} × ${originalImage.height} px</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Detected DPI:</span>
+                    <span class="metadata-value">${detectedDPI}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">File Type:</span>
+                    <span class="metadata-value">${file.type}</span>
+                </div>
+            `;
+        }
+
+        /**
+         * Update CM to PX converter
+         */
+        function updateCmConverter() {
+            const dpi = parseFloat(dpiInput.value) || 200;
+            const cm = parseFloat(cmInput.value);
+
+            // Calculate 1 cm in pixels
+            const oneCmInPx = Math.round(dpi / 2.54);
+            oneCmPx.textContent = oneCmInPx;
+
+            // Calculate custom cm value if entered
+            if (!isNaN(cm) && cm > 0) {
+                const px = Math.round(cm * dpi / 2.54);
+                cmToPxResult.textContent = `${px} px`;
+            } else {
+                cmToPxResult.textContent = '— px';
+            }
+        }
+
+        /**
+         * Compress and prepare image for download
+         */
+        function compressImage() {
+            if (!originalImage) {
+                showStatus('No image loaded.', 'error');
+                return;
+            }
+
+            const width = parseInt(widthInput.value) || originalImage.width;
+            const height = parseInt(heightInput.value) || originalImage.height;
+            const format = outputFormat.value;
+            const quality = parseFloat(qualityInput.value) || 0.92;
+
+            showStatus('Processing image...', 'info');
+
+            // Create a new canvas for the output
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = width;
+            outputCanvas.height = height;
+            const outputCtx = outputCanvas.getContext('2d');
+
+            // Draw the scaled image
+            outputCtx.drawImage(originalImage, 0, 0, width, height);
+
+            // Convert to blob
+            const mimeType = format === 'png' ? 'image/png' : 
+                           format === 'webp' ? 'image/webp' : 'image/jpeg';
+
+            outputCanvas.toBlob(function(blob) {
+                if (blob) {
+                    processedBlob = blob;
+                    const sizeKB = (blob.size / 1024).toFixed(2);
+                    const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
+                    const sizeDisplay = blob.size > 1024 * 1024 ? 
+                        `${sizeMB} MB` : `${sizeKB} KB`;
+
+                    showStatus(
+                        `Image processed successfully! Output size: ${sizeDisplay}. Click Download to save.`,
+                        'success'
+                    );
+                    downloadBtn.classList.remove('hidden');
+                } else {
+                    showStatus('Failed to process image.', 'error');
+                }
+            }, mimeType, quality);
+        }
+
+        /**
+         * Download the processed image
+         */
+        function downloadImage() {
+            if (!processedBlob) {
+                showStatus('No processed image available. Please compress first.', 'error');
+                return;
+            }
+
+            const filename = outputFilename.value || 'image_updated';
+            const format = outputFormat.value;
+            const extension = format;
+            const fullFilename = filename.includes('.') ? filename : `${filename}.${extension}`;
+
+            // Create download link
+            const url = URL.createObjectURL(processedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fullFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showStatus(`Image downloaded as "${fullFilename}"`, 'success');
+        }
+
+        /**
+         * Show status message
+         */
+        function showStatus(message, type) {
+            statusArea.className = 'status-area';
+            statusArea.classList.add(`status-${type}`);
+            statusArea.textContent = message;
+        }
+
+        // Initialize CM converter on load
+        updateCmConverter();
+    </script>
+</body>
+</html>
